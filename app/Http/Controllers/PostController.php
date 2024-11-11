@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\AutoEncoder;
+use Intervention\Image\ImageManager;
 
 class PostController extends Controller
 {
@@ -23,16 +26,29 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'cover' => 'required', // Tambahkan validasi file
+            // 'cover' => 'required|image|mimes:jpg,png,jpeg|max:10240', // Tambahkan validasi file
             'title' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
 
         if ($request->hasFile('cover')) {
-            $validatedData['cover'] = $request->file('cover')->store('storage/cover', 'public');
+            $cover = $request->file('cover');
+
+            $manager = new ImageManager(Driver::class);
+            $coverRead = $manager->read($cover);
+            $coverEncode = $coverRead->encode(new AutoEncoder(quality: 50));
+
+
+
+            $fileName = uniqid('cover_') . '.' . $cover->getClientOriginalExtension();
+            $coverEncode->save(public_path('storage/cover/' . $fileName));
         }
 
-        $post = Post::create($request->all());
+        $post = Post::create([
+            'cover' => $fileName,
+            'title' => $request->title,
+            'description' => $request->description,
+        ]);
 
         return response()->json([
             'success' => true,

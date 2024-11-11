@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -14,6 +15,8 @@ class Post extends Model
 
     public function getCoverUrlAttribute()
     {
-        return asset("storage/$this->cover");
+        return (Storage::disk('public')->exists("cover/{$this->cover}"))
+            ? asset("storage/cover/{$this->cover}")
+            : asset("storage/cover/default.jpg");
     }
 }

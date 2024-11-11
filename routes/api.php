@@ -24,10 +24,10 @@ use Illuminate\Support\Facades\Route;
 // Route::post('/news', [PostController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/register', [AuthController::class, 'register']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/news', [PostController::class, 'index']);
     Route::post('/news', [PostController::class, 'store']);
-
 });

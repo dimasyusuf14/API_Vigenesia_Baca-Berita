@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -38,6 +39,7 @@ class AuthController extends Controller
             'success' => true,
             'data' => [
                 'email' => $user->email,
+                'role' => $user->role,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ],
@@ -54,6 +56,38 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'User logout successfully',
             'data' => null
+        ], 200);
+    }
+
+    public function register(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+        // Buat user baru
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Buat access token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => $user,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'role' => $user->role,
+            ],
+
+            'message' => 'User registered successfully',
         ], 200);
     }
 }
